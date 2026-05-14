@@ -64,6 +64,8 @@ mantis whoami
 
 Caveat worth knowing: a key minted on `primary` only exists on `primary`. Profiles don't replicate state — they let your *CLI* keep working when one backend is down, and they let you split keys across deployments by purpose (`prod` / `staging` / `personal` / `home-lab`). For genuine URL-level redundancy where the trigger URL itself doesn't depend on any one host, use `mantis edge mint` — encrypted edge URLs decrypt purely from the Cloudflare Worker secret and have no per-key server state.
 
+Once you have a few profiles configured, snapshot them with [`mantis backup`](/cli-backup) into a passphrase-encrypted file so a new machine is one `mantis restore` away from your full setup — keychain entries, plugins, the lot.
+
 ## 5. Create your first key
 
 ```bash
