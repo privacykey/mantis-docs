@@ -1,4 +1,7 @@
-# Honey directory
+---
+title: "Honey directory"
+description: "Create a ZIP bundle of bait files wired to the same Mantis key."
+---
 
 A `.zip` bundle of pre-baited files, all wired to the same key. Drop the extracted folder on a shared drive; any file inside that gets opened, double-clicked, or `cat`'d fires the mantis.
 

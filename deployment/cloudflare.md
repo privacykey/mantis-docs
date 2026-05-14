@@ -1,4 +1,8 @@
-# Deploying mantis with Cloudflare Tunnel (+ Access)
+---
+title: "Deploying Mantis with Cloudflare Tunnel and Access"
+description: "Expose a local Mantis instance through Cloudflare Tunnel and optional Access SSO."
+sidebarTitle: "Cloudflare Tunnel"
+---
 
 This sets up mantis to run in Docker on your own hardware and exposes it on the public internet at `mantis.<your-domain>` via **Cloudflare Tunnel**. Optionally, you can put parts of mantis behind **Cloudflare Access** for SSO (Google/GitHub/email-OTP/etc.).
 
@@ -76,7 +80,7 @@ surfaces:
 - keep `/inbox*` and `/api/inbox` blocked unless this is a deliberate dev box
 
 Use the exact expressions and suggested thresholds in
-[`edge-limits.md`](./edge-limits.md#cloudflare-tunnel-or-cloudflare-in-front-of-any-host).
+[`edge-limits.md`](/deployment/edge-limits#cloudflare-tunnel-or-cloudflare-in-front-of-any-host).
 
 ## Step 6 — Bootstrap an API key
 
@@ -95,8 +99,8 @@ Paste into the dashboard login.
 | Level | Paths gated by CF Access | CLI works? | Webhook delivery to mantis? | Dashboard auth |
 |---|---|---|---|---|
 | **No Access** | nothing | Yes | Yes | API key only |
-| **Dashboard-only** | `/`, `/keys/*`, `/login*`, `/logout*` | Yes | Yes | CF SSO + API key |
-| **Full (recommended)** | above + management API routes (`/api/keys*`, `/api/api-keys*`, `/api/cron*`, optionally `/api/health`) | **Yes** via `mantis cloudflare login` or `set-service-auth` | Yes (webhooks hit `/c/*`, `/status/*`, wallet callbacks, and optional dev inbox routes which stay open) | CF SSO + API key |
+| **Dashboard-only** | `/`, `/keys*`, `/settings*`, `/login*`, `/logout*` | Yes | Yes | CF SSO + API key |
+| **Full (recommended)** | above + management API routes (`/api/keys*`, `/api/hits*`, `/api/api-keys*`, `/api/audit*`, `/api/cron*`, optionally `/api/health`) | **Yes** via `mantis cloudflare login` or `set-service-auth` | Yes (webhooks hit `/c/*`, `/status/*`, wallet callbacks, and optional dev inbox routes which stay open) | CF SSO + API key |
 
 > The CLI now supports auth-passthrough for Cloudflare Access. The auth flow happens entirely on your machine: the CLI gets a short-lived JWT from `cloudflared` (via SSO) **or** sends a Service Auth header pair — and forwards it on every management API call. Mantis itself doesn't validate Cloudflare JWTs; it just receives requests that have already passed CF's gate, then validates the API key as usual. The server stays unaware of Cloudflare.
 
@@ -164,8 +168,11 @@ The CLI sends `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers on eve
    - `/login*`
    - `/logout*`
    - `/keys*`
+   - `/settings*`
    - `/api/keys*`
+   - `/api/hits*`
    - `/api/api-keys*`
+   - `/api/audit*`
    - `/api/cron*`
 5. **Identity providers** (for Option 1 / browser SSO): tick the methods you configured.
 6. **Policies** → add as needed:

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "mantis",
+  "description": "Documentation for Mantis, a self-hostable canary key service.",
+  "colors": {
+    "primary": "#FFB000",
+    "light": "#FFB000",
+    "dark": "#FFB000"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "seo": {
+    "indexing": "navigable"
+  },
+  "metadata": {
+    "timestamp": true
+  },
+  "navigation": {
+    "directory": "card",
+    "groups": [
+      {
+        "group": "Start",
+        "icon": "rocket",
+        "pages": [
+          "index",
+          "getting-started",
+          "trying-locally",
+          "use-cases"
+        ]
+      },
+      {
+        "group": "Deployment",
+        "icon": "server",
+        "root": "deployment/index",
+        "pages": [
+          "deployment/docker-local",
+          "deployment/tailscale",
+          "deployment/cloudflare",
+          "deployment/railway",
+          "deployment/fly",
+          "deployment/render",
+          "deployment/edge-limits",
+          "deployment/backups",
+          "edge-deployment"
+        ]
+      },
+      {
+        "group": "Reference",
+        "icon": "book-open",
+        "pages": [
+          "api",
+          "configuration",
+          "updating"
+        ]
+      },
+      {
+        "group": "Features",
+        "icon": "blocks",
+        "pages": [
+          "file-keys",
+          "honey-directory",
+          "host-events",
+          "uptime-kuma",
+          "reliability"
+        ]
+      },
+      {
+        "group": "Operating",
+        "icon": "settings",
+        "pages": [
+          "single-user",
+          "operational-notes",
+          "dev-inbox"
+        ]
+      },
+      {
+        "group": "Recipes",
+        "icon": "chef-hat",
+        "pages": [
+          "self-hosted-apps"
+        ]
+      },
+      {
+        "group": "Architecture",
+        "icon": "folder-tree",
+        "pages": [
+          "architecture"
+        ]
+      }
+    ]
+  }
+}

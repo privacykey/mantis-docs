@@ -1,0 +1,26 @@
+---
+title: "Mantis documentation"
+description: "Install, deploy, operate, and extend Mantis canary keys."
+---
+
+Mantis is a self-hostable canary key service. It gives you trigger URLs that fire when someone opens a bait file, starts a host event, hits a planted link, or trips an operational monitor.
+
+## Start here
+
+- [Getting started](/getting-started) covers CLI install through your first key.
+- [Trying it locally](/trying-locally) covers Docker evaluation, contributor setup, and benchmarks.
+- [Use cases](/use-cases) shows defensive, detective, operational, and adversarial-research patterns.
+
+## Deploy Mantis
+
+- [Deployment overview](/deployment) helps choose between local Docker, tunnels, and PaaS hosts.
+- [Local Docker](/deployment/docker-local) is for evaluation and development.
+- [Tailscale](/deployment/tailscale) and [Cloudflare Tunnel](/deployment/cloudflare) expose a local host safely.
+- [Railway](/deployment/railway), [Fly.io](/deployment/fly), and [Render](/deployment/render) run Mantis as a long-running service.
+- [mantis-edge](/edge-deployment) covers the stateless Cloudflare Worker variant.
+
+## Build with Mantis
+
+- [HTTP API](/api) documents endpoints, trigger responses, and webhook payloads.
+- [File keys](/file-keys), [honey directories](/honey-directory), and [host-event keys](/host-events) cover the main trigger surfaces.
+- [Self-hosted app recipes](/self-hosted-apps) show where to plant canaries in common apps.

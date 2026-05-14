@@ -1,4 +1,7 @@
-# Dev inbox
+---
+title: "Dev inbox"
+description: "Use the built-in local webhook capture while developing Mantis."
+---
 
 A built-in webhook capture, only enabled with `ENABLE_DEV_INBOX=1`:
 

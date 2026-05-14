@@ -1,4 +1,8 @@
-# A. Local Docker (no tunnel)
+---
+title: "Local Docker"
+description: "Run Mantis locally with Docker for evaluation or development."
+sidebarTitle: "Local Docker"
+---
 
 ```bash
 git clone <this repo> mantis && cd mantis

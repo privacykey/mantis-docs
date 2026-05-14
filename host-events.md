@@ -1,4 +1,7 @@
-# Host-event keys
+---
+title: "Host-event keys"
+description: "Install host snippets that fire Mantis keys on shell, login, boot, wake, and network events."
+---
 
 Want to know when *your own machine* boots, logs in, or starts a shell? Create a key, then install one of the generated snippets on the host you want to watch:
 
@@ -16,6 +19,7 @@ Want to know when *your own machine* boots, logs in, or starts a shell? Create a
 | `windows-logon` | Any user logs on | Windows |
 | `windows-wake` | System resumes from sleep / hibernate | Windows |
 | `windows-network` | Network profile connects (Wi-Fi join, Ethernet, VPN) | Windows |
+| `nfc-ndef` | A phone taps an NFC tag and opens the URL | Blank NFC tag (NTAG213/215/216) |
 
 Get the installer for a key via:
 
@@ -80,6 +84,25 @@ The CSS uses partial escape-sequence obfuscation on the URL (`\6c` for `l`, etc.
 
 The JS snippet sends explicit `?l=<location>&r=<referrer>` query params alongside the canary URL so you can identify the cloning site even when the Referer header is stripped (strict referrer policies, mixed-protocol downgrades, etc.).
 
+## Physical snippets (NFC)
+
+The `/install` endpoint also generates an NFC URL record:
+
+| Type | Fires when | Use case |
+|---|---|---|
+| `nfc-ndef` | A phone taps a written NFC tag and opens the key URL | Server-room stickers, laptop lids, asset labels, network closet doors |
+
+```bash
+mantis install <key-id> --type nfc-ndef --out mantis-nfc-url.txt
+mantis download <key-id> --nfc-label mantis-nfc-label.pdf
+```
+
+Write the generated URL to a blank tag with any NFC writer app. Mantis appends
+`?src=nfc`, which the trigger endpoint promotes into `host_context.source = "nfc"`
+when the tag is tapped. The printable `nfc-label` PDF is a QR/sticker
+companion for the same key; it only fires when scanned or tapped, not when the
+PDF itself is opened.
+
 ## Smart-home snippets (Home Assistant / Scrypted)
 
 The `/install` endpoint also generates smart-home snippets:
@@ -99,7 +122,7 @@ snippet reports to. The snippet stores a literal URL, so changing the CLI's
 current profile later does not affect already-installed Home Assistant or
 Scrypted automations.
 
-For devices that do not expose useful webhooks, [`iot-helper/`](../iot-helper/README.md) can watch LAN neighbor tables and log files, then fire the same Mantis URL for unexpected online/login events.
+For devices that do not expose useful webhooks, [`iot-helper/`](https://github.com/privacykey/mantis/tree/main/iot-helper) can watch LAN neighbor tables and log files, then fire the same Mantis URL for unexpected online/login events.
 
 ## What information each installer captures
 
@@ -107,7 +130,7 @@ Each installer sends `X-Mantis-*` headers alongside the hit, which the server pa
 
 | Header | Set by | Useful for |
 |---|---|---|
-| `X-Mantis-Source` | every installer | which installer fired (shell / shell-sudo / macos-login / macos-boot / macos-wake / macos-network / linux-boot / linux-wake / linux-network / windows-logon / windows-wake / windows-network / homeassistant / scrypted / iot-network / iot-log) |
+| `X-Mantis-Source` | every installer or `?src=` helper | which installer fired (shell / shell-sudo / macos-login / macos-boot / macos-wake / macos-network / linux-boot / linux-wake / linux-network / windows-logon / windows-wake / windows-network / nfc / homeassistant / scrypted / iot-network / iot-log / wallet-installed / wallet-uninstalled / wallet-fetched) |
 | `X-Mantis-User` | `shell`, `shell-sudo`, `macos-login`, `macos-network`, `macos-wake`, `windows-logon`, `windows-wake`, `windows-network` | OS account |
 | `X-Mantis-Host` | every installer | which of your machines |
 | `X-Mantis-SSH-Client` | `shell`, `shell-sudo` (when SSH'd in) | **the SSH client's IP** |

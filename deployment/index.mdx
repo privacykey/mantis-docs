@@ -1,0 +1,31 @@
+---
+title: "Deployment"
+description: "Choose how to run Mantis and expose a public trigger URL."
+---
+
+The mantis needs a public-reachable URL. Pick the option that matches where you want to run it.
+
+| | What runs where | Public URL via | When this is right |
+|---|---|---|---|
+| **A. [Local Docker](/deployment/docker-local)** | Your machine | None (localhost only) | Development, testing, air-gapped use |
+| **B. [Docker + Tailscale](/deployment/tailscale)** | Your machine | Tailscale Funnel (`*.ts.net`) | Personal mantis on a laptop / home server, works behind CGNAT |
+| **C. [Docker + Cloudflare Tunnel](/deployment/cloudflare)** | Your machine | Your own domain on Cloudflare | You already have a Cloudflare-hosted domain and want SSO via Cloudflare Access |
+| **E1. [Railway](/deployment/railway)** | Railway (long-running) | `*.up.railway.app` or custom | Set-and-forget; the worker runs natively with no cron config |
+| **E2. [Fly.io](/deployment/fly)** | Fly (long-running) | `*.fly.dev` or custom | Same shape as Railway, with broader regional choice |
+| **E3. [Render](/deployment/render)** | Render (long-running) | `*.onrender.com` or custom | Same shape; free tier exists but cold-starts after 15 min idle |
+
+For any public option, also see [public edge limits](/deployment/edge-limits) for rate-limit and DDoS guidance, and [backups](/deployment/backups) for Postgres backup strategies.
+
+## Quick-pick: A vs B vs C
+
+Both B and C give you a public HTTPS URL for mantis running on your own hardware. The differences:
+
+| | Tailscale (B) | Cloudflare (C) |
+|---|---|---|
+| Need to own a domain? | No, uses `*.ts.net` | Yes, must be on Cloudflare |
+| Setup steps | ~3 | ~5 |
+| Dashboard SSO | Tailnet membership / ACLs in split mode | Cloudflare Access, one app and one policy |
+
+## Edge variant
+
+The stateless [`mantis-edge`](https://github.com/privacykey/mantis/tree/main/mantis-edge) Cloudflare Worker is a separate concept. It runs on Cloudflare's edge with no DB, and URLs decrypt purely from the Worker's secret. See [mantis-edge deployment](/edge-deployment) for the Worker setup.

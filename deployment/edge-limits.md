@@ -1,4 +1,8 @@
-# Public edge limits
+---
+title: "Public edge limits"
+description: "Recommended edge URL, body, and rate limits for public Mantis routes."
+sidebarTitle: "Edge limits"
+---
 
 Mantis trigger URLs are intentionally public. Put coarse limits at the first
 public edge so abusive traffic is dropped before it reaches Node, Postgres, or
@@ -176,7 +180,7 @@ Render reference:
 ## Tailscale Funnel
 
 Tailscale Funnel is convenient, but it is not a full WAF. Use split mode from
-[`tailscale.md`](./tailscale.md) so only public routes are exposed, and keep
+[`tailscale.md`](/deployment/tailscale) so only public routes are exposed, and keep
 dashboard/API traffic on the private Serve hostname.
 
 For stricter public limits with Tailscale:

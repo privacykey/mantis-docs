@@ -1,4 +1,8 @@
-# HTTP API
+---
+title: "HTTP API"
+description: "Reference for key management endpoints, trigger responses, and webhook payloads."
+sidebarTitle: "HTTP API"
+---
 
 The CLI is the recommended interface, but everything it does is exposed over a plain JSON HTTP API. Useful for scripts in languages without a Mantis client, or for testing the trigger path with `curl`:
 
@@ -23,25 +27,50 @@ curl -s $MANTIS/api/keys/<id>/hits -H "Authorization: Bearer $KEY" | jq
 
 ## Endpoint reference
 
-All `/api/*` endpoints require `Authorization: Bearer mantis_live_...`.
+Management endpoints are API-key authenticated with `Authorization: Bearer mantis_live_...`.
+Dashboard helper endpoints that need browser access also accept the `mantis_session`
+httpOnly cookie. Public trigger, status, health, wallet, and dev-inbox routes
+are called out explicitly below.
 
 | Method | Path | Purpose |
 |---|---|---|
-| `POST` | `/api/keys` | Create a key. Body: `{ memo, response_kind?, response_payload?, destinations?, dedupe_window_seconds?, expires_at? }` |
-| `GET` | `/api/keys` | List keys (paginated, `?limit=&cursor=`) |
-| `GET` | `/api/keys/:id` | Get one |
-| `PATCH` | `/api/keys/:id` | Update memo/notify/response/`disabled` |
-| `DELETE` | `/api/keys/:id` | Hard-delete key + cascade hits |
-| `GET` | `/api/keys/:id/hits` | Paginated hit log |
-| `GET` | `/api/hits/recent?since=<iso>&key_id=<id>` | Recent hit feed across accessible keys, used by CLI watch mode |
-| `GET` | `/api/keys/:id/download?format=docx\|xlsx\|pptx\|pdf\|folder` | Download a generated mantis file or `folder` honey-directory zip (cookie or Bearer auth) |
-| `GET` | `/api/keys/:id/install?type=<type>[&format=json]` | Generated installer snippet for host/web/IoT events (shell/macOS/Linux/Windows/Home Assistant/Scrypted) — cookie or Bearer auth |
-| `POST` | `/api/keys/:id/reset` | Reset a key's latched monitor state. Cookie or Bearer auth. |
-| `GET` `HEAD` | `/status/:public_id` | **Public.** Uptime-monitor status endpoint. 200 = ok, 503 = tripped, 404 = not monitored / disabled / unknown. Does not record a hit. |
-| `GET` | `/api/api-keys` | List keys (hashes never returned) |
-| `POST` | `/api/api-keys` | Mint a new key (plaintext returned **once**) |
-| `DELETE` | `/api/api-keys/:id` | Revoke (soft) |
+| `POST` | `/api/keys` | Create a key. Bearer auth. Body: `{ memo, response_kind?, response_payload?, destinations?, expires_at?, dedupe_window_seconds?, monitor_mode?, monitor_window_seconds? }` |
+| `GET` | `/api/keys?limit=&cursor=` | List accessible keys. Bearer auth. Admin keys see all; non-admin keys see rows they created. |
+| `GET` | `/api/keys/:id` | Get one accessible key. Bearer auth. |
+| `PATCH` | `/api/keys/:id` | Update memo, response, expiry, dedupe, monitor mode/window, `disabled`, or replace destinations. Bearer auth. |
+| `DELETE` | `/api/keys/:id` | Hard-delete a key and cascading hits/notifications. Bearer auth. |
+| `GET` | `/api/keys/:id/hits?limit=&cursor=` | Paginated hit log for one key. Bearer auth. |
+| `GET` | `/api/hits/recent?since=<iso>&cursor=<iso>&key_id=<id>&limit=<n>` | Recent hit feed across accessible keys, used by CLI watch mode. Bearer auth. |
+| `GET` | `/api/keys/:id/download?format=<format>` | Download a generated artifact. Bearer or session auth. Formats: `docx`, `xlsx`, `pptx`, `pdf`, `folder`, `nfc-label`, `apple-wallet`, `svg`, `html`, `md`, `eml`, `ics`, `vcf`. |
+| `GET` | `/api/keys/:id/install?type=<type>[&hostname=example.com][&format=json]` | Generated installer snippet for host, web, NFC, and IoT events. Bearer or session auth. |
+| `POST` | `/api/keys/:id/reset` | Reset a key's latched monitor state. Bearer or session auth. |
+| `POST` | `/api/keys/:id/destinations/:destinationId/signing-secret` | Reveal a webhook destination's plaintext HMAC signing secret. Bearer or session auth. Audited. |
+| `POST` | `/api/keys/:id/destinations/:destinationId/rotate-secret` | Rotate a webhook destination's HMAC signing secret and return the new secret once. Bearer or session auth. Audited. |
+| `GET` | `/api/api-keys` | List API keys. Bearer auth. Hashes are never returned; non-admin keys see only themselves. |
+| `POST` | `/api/api-keys` | Mint a new API key. Bearer auth. Body: `{ name, is_admin? }`; plaintext key returned once. Only admins can mint admin keys. |
+| `DELETE` | `/api/api-keys/:id` | Revoke an API key. Bearer auth. Self-revoke is allowed; revoking others requires admin. |
+| `GET` | `/api/audit?limit=&cursor=&since=&event_type=&actor=` | Admin-only audit log. Bearer or session auth. |
+| `GET` `HEAD` | `/api/health` | **Public unless gated by your proxy.** Liveness + `SELECT 1` readiness. 200 = app and DB ok, 503 = DB failure. |
+| `GET` `POST` | `/api/cron/notifications?max=<n>` | Notification retry and retention worker endpoint for serverless deployments. Requires `Authorization: Bearer $CRON_SECRET`; returns 401 if `CRON_SECRET` is unset. |
+| `GET` `HEAD` | `/status/:public_id` | **Public.** Uptime-monitor status endpoint. 200 = ok, 503 = tripped, 404 = not monitored / disabled / expired / unknown. Does not record a hit. |
 | `GET` `HEAD` `POST` | `/c/:public_id` | **Public.** Records a hit, returns the configured response. |
+| `ANY` | `/inbox/<slug>` | **Dev only.** Captures webhook-style requests when `ENABLE_DEV_INBOX=1`. |
+| `GET` `DELETE` | `/api/inbox` | **Dev only.** Read or clear the in-memory dev inbox when `ENABLE_DEV_INBOX=1`. |
+| `POST` | `/api/wallet/v1/log` | **Public Apple Wallet web service.** Accepts Wallet diagnostics. |
+| `GET` | `/api/wallet/v1/passes/:passTypeId/:serial` | **Public Apple Wallet web service.** Authenticates `Authorization: ApplePass <token>`, records `wallet-fetched`, returns the latest `.pkpass`. |
+| `GET` | `/api/wallet/v1/devices/:deviceId/registrations/:passTypeId` | **Public Apple Wallet web service.** Wallet update poll; returns 204 and does not record a hit. |
+| `POST` `DELETE` | `/api/wallet/v1/devices/:deviceId/registrations/:passTypeId/:serial` | **Public Apple Wallet web service.** Records `wallet-installed` on registration and `wallet-uninstalled` on removal. |
+
+Supported installer `type` values are `shell`, `shell-sudo`,
+`macos-login`, `macos-boot`, `macos-wake`, `macos-network`,
+`linux-boot`, `linux-wake`, `linux-network`, `windows-logon`,
+`windows-wake`, `windows-network`, `css-background`, `js-clone-detector`,
+`nfc-ndef`, `homeassistant`, and `scrypted`.
+
+Webhook destinations get an HMAC secret. Outbound raw-webhook deliveries include
+`X-Mantis-Timestamp` and `X-Mantis-Signature: sha256=<hex>` over
+`<timestamp>.<json body>`. The plaintext secret is only shown on create, replace,
+explicit reveal, or rotate responses; normal listing returns a fingerprint.
 
 ## Response kinds for the trigger endpoint
 

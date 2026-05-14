@@ -1,6 +1,27 @@
 # mantis docs
 
-The full documentation for [`privacykey/mantis`](https://github.com/privacykey/mantis) — a self-hostable mantis key service. This folder is staged for extraction into its own repo at [`privacykey/mantis-docs`](https://github.com/privacykey/mantis-docs).
+The Mintlify documentation source for [`privacykey/mantis`](https://github.com/privacykey/mantis), a self-hostable mantis key service.
+
+## Local preview
+
+```bash
+npm run dev
+```
+
+Mintlify serves the local preview at `http://localhost:3000`.
+
+## Validate
+
+```bash
+npm run validate
+npm run check-links
+```
+
+The same checks run in GitHub Actions on pushes and pull requests.
+
+## Deploy with Mintlify
+
+Connect `privacykey/mantis-docs` in the Mintlify dashboard, install the Mintlify GitHub App for this repository, and use `/` as the docs source path. Mintlify will deploy automatically from `main` after each push.
 
 ## Getting started
 
@@ -29,9 +50,9 @@ The full documentation for [`privacykey/mantis`](https://github.com/privacykey/m
 
 ## Features
 
-- [File keys](./file-keys.md) — `.docx` / `.xlsx` / `.pptx` / `.pdf` / `.svg` / `.html` / `.md` / `.eml` / `.ics` / `.vcf`
+- [File keys](./file-keys.md) — Office/PDF/SVG/HTML/Markdown/email/calendar/contact artifacts, honey-directory ZIP, NFC label PDF, and Apple Wallet `.pkpass`
 - [Honey directory](./honey-directory.md) — 9-file `.zip` bundle for shared-drive deployment
-- [Host-event keys](./host-events.md) — shell / login / boot / wake / network installers + web embeds + smart-home + the `X-Mantis-*` header reference
+- [Host-event keys](./host-events.md) — shell / login / boot / wake / network installers, web embeds, NFC, smart-home, and the `X-Mantis-*` header reference
 - [Uptime Kuma integration](./uptime-kuma.md) — fan-out via Kuma's 80+ notification channels
 - [Reliability](./reliability.md) — hit dedup, retry queue, UA / bot parsing
 

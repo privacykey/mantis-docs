@@ -1,17 +1,24 @@
-# Mantis canaries in self-hosted apps
+---
+title: "Mantis canaries in self-hosted apps"
+description: "Recipes for planting Mantis canaries in common self-hosted applications."
+sidebarTitle: "Self-hosted apps"
+---
 
 How to plant a tripwire inside the self-hosted apps you already run. Every recipe assumes you have a Mantis instance running and a key minted (`mantis new "memo"`). The `URL` referenced below is the per-key trigger URL printed by `mantis new`.
 
-Two flavours of recipe:
+Three flavours of recipe:
 
-1. **Drop-a-file** — generate an artifact with `mantis new --<fmt>` and upload it. The app stores the bytes; later, when anyone views/opens the file, an embedded reference fetches the trigger URL.
+1. **Drop-a-file** — generate an artifact with `mantis new --<fmt>` or `mantis download <id> --<fmt>` and upload it. The app stores the bytes; later, when anyone views/opens the file, an embedded reference fetches the trigger URL.
 2. **Paste-a-URL** — no new artifact needed. You put the trigger URL into a field the app will hit on your behalf (a credential, a webhook, a dashboard tile, etc.).
+3. **Platform artifact** — Wallet and NFC artifacts depend on the platform action: a pass install/fetch/remove, or a phone scan/tap.
 
 | | Format | What fires the canary |
 | -- | --- | --- |
 | `--docx` `--xlsx` `--pptx` | Office | Auto-fetch of external image when the doc is opened in Word/Excel/PowerPoint |
 | `--pdf` | PDF | `/OpenAction → /URI` on open + clickable link + visible URL |
 | `--folder` | ZIP of all of the above + .url/.webloc shortcuts | Honey-directory: every file in the bundle fires the same key |
+| `download --nfc-label` | PDF label | Printed QR fallback for an NFC tag; scan/tap opens the key URL |
+| `download --apple-wallet` | `.pkpass` | Wallet web-service callbacks record install, uninstall, and fetch events |
 | `--svg` | SVG | Browser/viewer renders `<image href=…>` |
 | `--html` | HTML | Browser fetches `<img src=…>` |
 | `--md` | Markdown | Note renderer fetches `![](…)` image |
@@ -162,7 +169,10 @@ Mantis has two URL-emitting modes:
 | **Server-backed** (`mantis new`) | `https://mantis.example.com/c/abc123` (~40 chars) | Postgres-backed Next.js server | Yes — full hit log, dashboard, monitor modes, retry queue |
 | **mantis-edge** (`mantis edge mint`) | `https://worker.example.com/c/<sealed-blob>` (~150–400 chars) | Cloudflare Worker, AES-GCM-sealed config in the URL itself | No — fires the configured webhook once, no local state |
 
-Every file format below is just a URL container — **all 12 formats work with either mode.** Pick the mode first, get a URL, then drop it into the format.
+Every artifact below is a URL container, but Wallet has one server-backed-only
+advantage: Apple Wallet web-service callbacks need the stateful server to record
+install/uninstall/fetch events. Pick the mode first, get a URL, then drop it
+into the format.
 
 ### Compatibility matrix
 
@@ -178,7 +188,7 @@ Every file format below is just a URL container — **all 12 formats work with e
 | `.ics` | ✅ | ⚠ | RFC 5545 §3.1 says lines SHOULD fold at 75 octets. Our generator doesn't fold — long edge URLs may upset strict parsers (most tolerate it). Test in your CalDAV client before deploying. |
 | `.vcf` | ✅ | ⚠ | RFC 6350 §3.2 same folding rule. Same caveat. |
 | `.nfc-label` (PDF/QR sticker) | ✅ | ✅ | QR error correction at "M" comfortably encodes up to ~500 chars; edge URLs at ~300 chars still scan reliably |
-| `.apple-wallet` (.pkpass) | ✅ | ⚠ | Apple Wallet's web-service callbacks require the server-backed key for registration/de-registration callbacks — edge-only use loses install/uninstall tracking |
+| `.apple-wallet` (.pkpass) | ✅ | ⚠ | Apple Wallet's web-service callbacks require the server-backed key for registration/de-registration/fetch callbacks — edge-only use loses lifecycle tracking |
 | QR via `--qr` | ✅ | ✅ | Same QR comment as above |
 
 ### Trade-offs
@@ -216,8 +226,8 @@ Every artifact Mantis generates follows a published spec, so any compliant consu
 | `.eml` | **RFC 5322** (Internet Message Format) + **RFC 2045–2049** (MIME) | `multipart/alternative` with `text/html` part containing `<img src="...">` |
 | `.ics` | **RFC 5545** (iCalendar Core Object Specification) + RFC 5546 (transport) | `VEVENT` with `URL:<canary>` and `ATTACH;FMTTYPE=image/png:<canary>` |
 | `.vcf` | **RFC 6350** (vCard 4.0) | `PHOTO;VALUE=URI:<canary>` and `URL:<canary>` |
-| `.nfc-label` | ISO 32000 (PDF) + **ISO/IEC 18004:2015** (QR Code 2005) | NDEF URI record on NFC, QR fallback printed in PDF |
-| `.apple-wallet` | Apple **PassKit Package Format** (proprietary, no ISO equivalent) | Web-service URL in `pass.json` → callbacks fire on install/registration/update |
+| `.nfc-label` | ISO 32000 (PDF) + **ISO/IEC 18004:2015** (QR Code 2005) | Printable PDF label with QR fallback; pair with `nfc-ndef` when writing an NFC tag |
+| `.apple-wallet` | Apple **PassKit Package Format** (proprietary, no ISO equivalent) | Web-service URL in `pass.json` → callbacks fire on install, uninstall, and fetch |
 | `.pkpass` QR `--qr` | **ISO/IEC 18004:2015** (QR Code) | Direct URL encoding, error correction level "M" |
 | Trigger 1×1 GIF | **CompuServe GIF89a** | Default response body for `/c/<id>` on a server-backed key |
 
@@ -229,4 +239,4 @@ The only fingerprint is the URL itself. For maximum stealth:
 
 - Use a custom domain for your server (`assets.your-company.com/c/<id>` looks innocuous; `mantis.example.com/c/<id>` does not)
 - Or use mantis-edge with a domain like `cdn.your-company.com` — the URL still reveals the path `/c/<blob>`, but the host stays neutral
-- The `CANARY_PUBLIC_PATH` env var (default `/c`) lets server-backed mode use stealthier paths like `/img`, `/track`, `/r`
+- The `MANTIS_PUBLIC_PATH` env var (default `/c`) lets server-backed mode use stealthier paths like `/img`, `/track`, `/r`

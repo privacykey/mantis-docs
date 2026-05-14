@@ -1,4 +1,7 @@
-# Reliability
+---
+title: "Reliability"
+description: "Understand hit deduplication, notification retries, worker mode, and bot parsing."
+---
 
 ## Hit dedup
 
@@ -14,7 +17,7 @@ Notifications are inserted into a `notifications` table on hit. A background wor
 **Cron mode** (Vercel and other serverless):
 - Worker is skipped automatically when `VERCEL` env is set.
 - Configure Vercel Cron (or external scheduler) to hit `POST /api/cron/notifications` every minute.
-- Optional auth: set `CRON_SECRET` and the endpoint requires `Authorization: Bearer $CRON_SECRET`.
+- Set `CRON_SECRET`; the endpoint requires `Authorization: Bearer $CRON_SECRET` and returns `401` when the secret is unset.
 
 ```json
 // vercel.json
@@ -22,6 +25,11 @@ Notifications are inserted into a `notifications` table on hit. A background wor
   "crons": [{ "path": "/api/cron/notifications", "schedule": "* * * * *" }]
 }
 ```
+
+Both worker mode and cron mode run the same retention sweep. If
+`MANTIS_HIT_RETENTION_DAYS`, `MANTIS_NOTIFICATION_RETENTION_DAYS`,
+`MANTIS_AUDIT_RETENTION_DAYS`, or `MANTIS_SESSION_RETENTION_DAYS` are set,
+old rows are purged during the hourly worker loop or the cron invocation.
 
 ## User-Agent + bot detection
 

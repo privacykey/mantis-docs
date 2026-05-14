@@ -1,4 +1,8 @@
-# Railway deploy
+---
+title: "Railway deploy"
+description: "Deploy Mantis on Railway with a long-running container and Postgres add-on."
+sidebarTitle: "Railway"
+---
 
 Railway runs the mantis as a long-running container with their Postgres add-on. No template button (yet) — manual setup takes ~3 minutes.
 
@@ -18,7 +22,7 @@ Railway runs the mantis as a long-running container with their Postgres add-on. 
 7. Set `PUBLIC_BASE_URL` to that URL (e.g., `https://mantis.up.railway.app`) and redeploy.
 8. Before broad public use, decide whether to keep the Railway domain directly
    exposed or put a Cloudflare-proxied custom domain in front for WAF/rate
-   limiting. See [public edge limits](./edge-limits.md#railway).
+   limiting. See [public edge limits](/deployment/edge-limits#railway).
 9. Visit `https://<your-domain>/login`, paste the `BOOTSTRAP_API_KEY` you generated. Done.
 
 ## Public edge limits
@@ -31,7 +35,7 @@ recommended production posture is:
 1. Add a custom domain to the Mantis Railway service.
 2. Put that hostname behind Cloudflare's orange-cloud proxy.
 3. Configure the `/c/*`, `/status/*`, and optional `/api/wallet/*` rules in
-   [public edge limits](./edge-limits.md#cloudflare-tunnel-or-cloudflare-in-front-of-any-host).
+   [public edge limits](/deployment/edge-limits#cloudflare-tunnel-or-cloudflare-in-front-of-any-host).
 4. Set `TRUST_PROXY_HEADERS=1` only when Cloudflare is the public entry point
    and no direct Railway hostname is advertised.
 

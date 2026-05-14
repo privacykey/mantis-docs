@@ -1,4 +1,7 @@
-# E2. Fly.io
+---
+title: "Fly.io"
+description: "Deploy Mantis to Fly.io with Postgres and public edge guidance."
+---
 
 ```bash
 cp deploy/fly.toml.example fly.toml
@@ -10,4 +13,4 @@ fly secrets set PUBLIC_BASE_URL=https://<app>.fly.dev BOOTSTRAP_API_KEY=mantis_l
 fly deploy
 ```
 
-Fly concurrency protects the VM, not the public URL. For app-layer URL/rate limits, use a Cloudflare-proxied custom domain; see **[edge-limits.md](./edge-limits.md#flyio)**.
+Fly concurrency protects the VM, not the public URL. For app-layer URL/rate limits, use a Cloudflare-proxied custom domain; see **[edge limits](/deployment/edge-limits#flyio)**.

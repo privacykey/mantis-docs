@@ -1,4 +1,8 @@
-# Uptime Kuma integration
+---
+title: "Uptime Kuma integration"
+description: "Use Mantis status URLs with Uptime Kuma notification channels."
+sidebarTitle: "Uptime Kuma"
+---
 
 Uptime Kuma integration lets you piggyback on [Uptime Kuma](https://github.com/louislam/uptime-kuma)'s 80+ notification integrations when you prefer status-monitor fan-out over mantis's built-in notification destinations.
 

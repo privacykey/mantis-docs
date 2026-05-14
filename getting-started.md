@@ -1,4 +1,7 @@
-# Getting started
+---
+title: "Getting started"
+description: "Install the CLI, choose a backend, log in, and create your first Mantis key."
+---
 
 The CLI is the recommended way to drive mantis — the dashboard is a nice browser for hits, but the CLI does everything the dashboard does plus the things the dashboard doesn't (multi-profile, installer snippets, bulk-create, scriptable JSON output). Five steps from zero to a working canary (one of them optional):
 
@@ -8,7 +11,7 @@ The CLI is the recommended way to drive mantis — the dashboard is a nice brows
 brew install privacykey/tap/mantis
 ```
 
-That gives you `mantis` on `$PATH` with shell completions, a man page, and the auto-update path from the Homebrew tap. (Building from source also works — see [`cli/README.md`](../cli/README.md#install-from-this-repo) for `npm link` instructions.)
+That gives you `mantis` on `$PATH` with shell completions, a man page, and the auto-update path from the Homebrew tap. (Building from source also works — see [`cli/README.md`](https://github.com/privacykey/mantis/tree/main/cli#install-from-this-repo) for `npm link` instructions.)
 
 ## 2. Pick where mantis lives
 
@@ -16,8 +19,8 @@ The CLI talks to either of two backends, with the same command surface:
 
 | Backend | What it gives you | Where it runs |
 |---|---|---|
-| **Stateful server** (`mantis`) | Dashboard, hit history, audit log, multiple destinations per key, key revocation, monitor/status | Your own server. Docker Compose on a VPS, or one-click via [Railway / Fly.io / Render](./deployment/README.md). **Don't run this on your laptop as your primary backend** — your laptop's not on the public internet at 3am when the canary fires. |
-| **Cloudflare Worker** (`mantis-edge`) | Sub-50ms response from the CF edge, no DB to host, "anyone with the AES key can mint", URLs are self-contained encrypted blobs | Cloudflare's edge — you deploy a single Worker via `npx wrangler deploy` (see [`mantis-edge/`](../mantis-edge/README.md)) |
+| **Stateful server** (`mantis`) | Dashboard, hit history, audit log, multiple destinations per key, key revocation, monitor/status, optional Apple Wallet passes | Your own server. Docker Compose on a VPS, or one-click via [Railway / Fly.io / Render](/deployment). **Don't run this on your laptop as your primary backend** — your laptop's not on the public internet at 3am when the canary fires. |
+| **Cloudflare Worker** (`mantis-edge`) | Sub-50ms response from the CF edge, no DB to host, "anyone with the AES key can mint", URLs are self-contained encrypted blobs | Cloudflare's edge — you deploy a single Worker via `pnpm --filter @mantis/edge run deploy` from the source checkout (see [`mantis-edge/`](https://github.com/privacykey/mantis/tree/main/mantis-edge)) |
 
 You can use **both**. Most people deploy the stateful server for primary tripwires (the ones you want a timeline + multi-destination management for), and reach for the edge variant for hand-off URLs that just need to fire a webhook without a central log.
 
@@ -30,15 +33,15 @@ mantis login
 # interactive: prompts for server URL + API key
 ```
 
-For the edge worker (one-time, after you deploy the worker per [`mantis-edge/README.md`](../mantis-edge/README.md)):
+For the edge worker (one-time, after you deploy the worker per [`mantis-edge/README.md`](https://github.com/privacykey/mantis/tree/main/mantis-edge)):
 
 ```bash
 mantis edge keygen                       # makes a 32-byte AES key
-npx wrangler secret put MANTIS_EDGE_KEY  # paste the key when prompted
+pnpm --filter @mantis/edge exec wrangler secret put MANTIS_EDGE_KEY
 mantis edge set-key https://mantis-edge.<your-subdomain>.workers.dev
 ```
 
-Credentials live in your OS keychain — never on disk in plaintext. See [`cli/README.md`](../cli/README.md) for storage details.
+Credentials live in your OS keychain — never on disk in plaintext. See [`cli/README.md`](https://github.com/privacykey/mantis/tree/main/cli) for storage details.
 
 ## 4. (Recommended) Set up a second profile for resilience
 
@@ -103,7 +106,7 @@ mantis bulk-create \
   --memo-template "{{area}} - {{device}}"
 ```
 
-See [`cli/README.md`](../cli/README.md) for the full command reference and [`COMMAND_MAP.md`](../cli/COMMAND_MAP.md) for the option matrix.
+See [`cli/README.md`](https://github.com/privacykey/mantis/tree/main/cli) for the full command reference and [`COMMAND_MAP.md`](https://github.com/privacykey/mantis/blob/main/cli/COMMAND_MAP.md) for the option matrix.
 
 ## Browse hits in the dashboard (optional)
 
@@ -116,4 +119,7 @@ The web dashboard at `/keys` is handy for clicking through a key's hits and seei
 | `/keys/new` | `mantis new` |
 | `/inbox` (dev only) | `mantis hits last --follow` against a key pointing at `/inbox/demo` |
 
-The dashboard authenticates via an httpOnly cookie containing the API key; logout clears the cookie.
+The dashboard authenticates by exchanging your API key for an httpOnly
+`mantis_session` cookie. The cookie contains an opaque session token; the
+database stores only its SHA-256 hash. Logout revokes the session row and
+clears the cookie.

@@ -1,4 +1,7 @@
-# Deployment
+---
+title: "Deployment"
+description: "Choose how to run Mantis and expose a public trigger URL."
+---
 
 The mantis needs a public-reachable URL. Pick the option that matches where you want to run it.
 
@@ -30,4 +33,4 @@ Both B and C give you a public HTTPS URL for mantis running on your own hardware
 
 ## Edge variant
 
-The stateless [`mantis-edge`](../../mantis-edge/README.md) Cloudflare Worker is a separate concept: it runs on Cloudflare's edge with no DB, and URLs decrypt purely from the Worker's secret. See [edge-deployment.md](../edge-deployment.md) for the Worker setup.
+The stateless [`mantis-edge`](https://github.com/privacykey/mantis/tree/main/mantis-edge) Cloudflare Worker is a separate concept: it runs on Cloudflare's edge with no DB, and URLs decrypt purely from the Worker's secret. See [edge-deployment.md](../edge-deployment.md) for the Worker setup.

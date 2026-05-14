@@ -1,0 +1,9 @@
+{
+  "name": "mantis-docs",
+  "private": true,
+  "scripts": {
+    "dev": "npx --yes mint@latest dev",
+    "validate": "npx --yes mint@latest validate",
+    "check-links": "npx --yes mint@latest broken-links"
+  }
+}

@@ -1,4 +1,8 @@
-# Deploying mantis with Tailscale
+---
+title: "Deploying Mantis with Tailscale"
+description: "Expose Mantis through Tailscale Funnel with simple or split public routes."
+sidebarTitle: "Tailscale"
+---
 
 This sets up mantis to run in Docker on your own hardware (laptop, home
 server, NAS, VPS) and expose it through Tailscale. There are two useful modes:
@@ -153,7 +157,7 @@ If the public hostname will be widely exposed or advertised, use one of these:
   Serve/Funnel config at that proxy.
 
 Suggested limits and a minimal nginx shape are in
-[`edge-limits.md`](./edge-limits.md#tailscale-funnel).
+[`edge-limits.md`](/deployment/edge-limits#tailscale-funnel).
 
 ### Optional public routes
 

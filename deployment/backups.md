@@ -1,11 +1,15 @@
-# Backups & retention
+---
+title: "Backups and retention"
+description: "Back up and restore the Postgres database that stores Mantis data."
+sidebarTitle: "Backups"
+---
 
 Mantis stores everything in Postgres. Backup = `pg_dump` the database.
 
 Two reasons to back up:
 
 - **Disaster recovery** — restore on a new host if the server dies.
-- **Schema rollback** — migrations are forward-only; `0004` and `0005` drop columns. If you mess up an upgrade, only a backup recovers the old shape.
+- **Schema rollback** — migrations are forward-only. If an upgrade damages data or you need the old shape back, only a backup recovers it cleanly.
 
 ## Local Postgres (docker compose)
 
@@ -42,9 +46,14 @@ Each provider has its own snapshot mechanism. Don't rely on theirs alone — the
 | `hits` | Yes (but bounded by retention) — forensic history |
 | `notifications` | Yes (bounded by retention) — delivery state, in-flight retries |
 | `notification_destinations` | Yes — channel config + activation status |
+| `audit_events` | Yes — operator and key-management history |
+| `sessions` | Usually — dashboard login sessions; can be dropped if you are comfortable logging in again |
 | `wallet_config` | Yes — Pass Type ID cert + password (sensitive!) |
+| `wallet_registrations` | Yes if using Apple Wallet — device push tokens for pass update notifications |
 
-`wallet_config` contains the .p12 password in plaintext. Dump files should be encrypted at rest (`gpg --symmetric`, or rely on bucket-level KMS).
+`wallet_config` contains the .p12 password in plaintext, and notification
+tables can contain webhook targets and signing secrets. Dump files should be
+encrypted at rest (`gpg --symmetric`, or rely on bucket-level KMS).
 
 ## Retention
 
@@ -55,9 +64,13 @@ Built-in retention (see `.env.example`):
 ```bash
 MANTIS_HIT_RETENTION_DAYS=90           # delete hits + their notifications
 MANTIS_NOTIFICATION_RETENTION_DAYS=30  # delete settled notifications
+MANTIS_AUDIT_RETENTION_DAYS=365        # delete audit events
+MANTIS_SESSION_RETENTION_DAYS=7        # delete expired/revoked sessions
 ```
 
-The notify worker sweeps hourly. No separate cron needed. Both unset = retain forever — appropriate for low-traffic deployments.
+The notify worker sweeps hourly. In serverless cron mode, the same sweep runs
+through `/api/cron/notifications`. All unset = retain forever — appropriate for
+low-traffic deployments.
 
 Manual cleanup if you don't want a fixed retention:
 
