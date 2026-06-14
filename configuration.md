@@ -9,6 +9,11 @@ These are the variables operators usually need to understand.
 ## Required
 
 - `DATABASE_URL` — Postgres connection string.
+- `MANTIS_API_KEY_PEPPER` — server-side secret used as the HMAC key when hashing API keys at rest. Generate with `openssl rand -base64 32`. A leaked database alone is useless to an attacker without this value too. **Do not rotate after the first key is minted** — rotating invalidates every existing API key used by the CLI or API clients. If you must rotate, plan to re-mint and re-distribute every API key on the same maintenance window.
+
+  Upgrading from a pre-pepper deployment? Set the pepper once and existing API keys keep working — the verifier accepts the old pre-pepper SHA-256 hashes too, and opportunistically re-hashes each row to the peppered form on next use. After a few weeks of normal traffic the legacy rows drain to zero.
+
+- `MANTIS_SECRET_KEY` *(optional)* — envelope-encryption key for operator secrets stored in the database: per-destination webhook HMAC signing secrets, the Apple Wallet auth secret, and the `.p12` certificate passphrase. When set, those columns are sealed at rest with AES-256-GCM (an `encv1:` envelope) so a database-only leak (backup, read replica) yields no usable secrets — the same trust model as the pepper above. Generate with `openssl rand -base64 32` (a 64-character hex string also works; it must decode to exactly 32 bytes). Leave it unset to keep plaintext-at-rest behavior. The feature is backward compatible: existing plaintext rows are read transparently, and once the key is set, new writes are encrypted while legacy rows migrate to ciphertext the next time a signing secret is rotated or the wallet config is re-saved. Don't rotate this key without re-saving those secrets, and don't remove it once rows are encrypted — reads of sealed values will then fail.
 
 ## URLs
 
@@ -31,7 +36,9 @@ These are the variables operators usually need to understand.
 
 ## Proxy and public-only hosts
 
-- `TRUST_PROXY_HEADERS=1` — trust `cf-connecting-ip`, `x-vercel-forwarded-for`, `x-real-ip`, and `x-forwarded-for` for forensic IP logging. Set only behind a proxy that strips and re-injects those headers. Auto-enabled on Vercel and in non-production.
+- `TRUST_PROXY_HEADERS=1` — trust `cf-connecting-ip`, `x-vercel-forwarded-for`, `x-real-ip`, and `x-forwarded-for` for forensic IP logging. Set only behind a proxy that strips and re-injects those headers. Auto-enabled on Vercel and in non-production; set `TRUST_PROXY_HEADERS=0` to force it off even there. In production with no trusted proxy (the default), client IPs are recorded as `null` rather than spoofable values, and Mantis logs a one-time startup warning.
+- `TRUSTED_IP_HEADER` — pin client-IP extraction to a single header (matched case-insensitively), e.g. `x-real-ip`. By default Mantis tries `cf-connecting-ip`, `x-vercel-forwarded-for`, `x-real-ip`, then `x-forwarded-for` and takes the first present; behind a non-Cloudflare proxy (nginx, Caddy, Traefik) that sets only `x-real-ip` and doesn't strip an inbound `cf-connecting-ip`, an attacker could forge `cf-connecting-ip` and have it trusted. Pin this to the one header your proxy authoritatively writes so all others are ignored. Only takes effect when `TRUST_PROXY_HEADERS` is on.
+- `TRUST_PROXY_HOPS` — number of trusted reverse-proxy hops in front of Mantis, default `1` (clamped to 1–16). Only affects `x-forwarded-for` parsing: the client IP is taken this many entries from the right of the chain (your nearest proxy appends the real peer on the right), so a client can't forge it past your proxy. Raise it only if you stack multiple trusted proxies; it has no effect on single-value headers like `cf-connecting-ip` or `x-real-ip`.
 - `PUBLIC_ONLY_HOSTS` — comma/space-separated hostnames that should expose only public routes: trigger URLs, status URLs, and Wallet callbacks.
 - `DASHBOARD_HOSTS` — hostnames allowed to serve the dashboard and management API. When `PUBLIC_ONLY_HOSTS` is set, unknown hosts fail closed to public-only unless explicitly listed here.
 - `PUBLIC_ONLY_ALLOW_HEALTH=1` — allow `/api/health` on public-only hosts.
@@ -55,7 +62,7 @@ cron mode runs the same sweep through `/api/cron/notifications`.
 
 ## Dev inbox
 
-- `ENABLE_DEV_INBOX=1` — enable the unauthenticated in-memory `/inbox` webhook capture and `/api/inbox` JSON API. Leave off in production.
+- `ENABLE_DEV_INBOX=1` — enable the in-memory `/inbox` webhook capture and `/api/inbox` JSON API. The `/inbox/<slug>` capture endpoint is unauthenticated by design (so it can receive webhooks), but reading or clearing the buffer (`GET`/`DELETE /api/inbox`) requires an API key or dashboard session. Leave off in production.
 
 ## Docker and tunnels
 

@@ -64,6 +64,7 @@ cp .env.example .env
 #   TS_AUTHKEY=tskey-auth-xxxxxxxxxxxx
 #   TS_HOSTNAME=mantis
 #   PUBLIC_BASE_URL=https://mantis.<your-tailnet>.ts.net
+#   MANTIS_API_KEY_PEPPER=<base64-output-from-openssl-rand-base64-32>
 
 docker compose --profile tailscale up -d
 ```
@@ -94,6 +95,7 @@ TS_AUTHKEY=tskey-auth-xxxxxxxxxxxx
 TS_PRIVATE_HOSTNAME=mantis-private
 TS_PUBLIC_HOSTNAME=mantis-public
 TS_EXTRA_ARGS=--advertise-tags=tag:mantis
+MANTIS_API_KEY_PEPPER=<base64-output-from-openssl-rand-base64-32>
 
 # Generated trigger/status/wallet URLs should be public.
 PUBLIC_BASE_URL=https://mantis-public.<your-tailnet>.ts.net

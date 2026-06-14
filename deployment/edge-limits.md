@@ -17,7 +17,7 @@ Use these as starting values, then adjust for your traffic:
 | `/c/*` | `GET`, `HEAD`, `POST` | 2 KB | 16 KB | 120/min/IP |
 | `/status/*` | `GET`, `HEAD` | 1 KB | 0 | 240/min/IP |
 | `/api/wallet/*` | Wallet methods | 4 KB | 64 KB | 120/min/IP |
-| `/inbox*`, `/api/inbox` | dev only | 2 KB | 64 KB | private/dev only |
+| `/inbox*`, `/api/inbox` | dev only | 2 KB | 1 MiB | private/dev only |
 
 Notes:
 
@@ -30,6 +30,13 @@ Notes:
 - Node's default HTTP request-header limit is 16 KiB. Railway's public proxy
   allows 32 KB combined headers. The app stores request fields with caps above
   the Node default so normal accepted traffic is preserved.
+- Mantis also enforces app-level body caps where it parses request bodies:
+  management JSON bodies are capped at 64 KiB, Apple Wallet log bodies at
+  32 KiB, and the dev inbox capture at 1 MiB. Oversized parsed bodies return
+  `413 payload_too_large`.
+- Stored hit headers are allowlisted and capped. Credential-shaped names such
+  as `authorization`, cookies, session tokens, CSRF tokens, and API-key-looking
+  headers are dropped before storage; `x-mantis-*` installer headers are kept.
 
 ## Cloudflare Tunnel or Cloudflare in front of any host
 

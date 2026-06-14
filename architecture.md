@@ -31,18 +31,25 @@ src/                         # Next.js server: dashboard, API, public triggers
     inbox/                   # dev webhook capture + viewer
   db/                        # Drizzle schema and SQL migrations
   lib/
-    auth.ts                  # Bearer API key auth and per-key ownership checks
+    auth.ts                  # Bearer API key auth + per-IP auth-failure throttle
     session.ts               # dashboard session cookies backed by hashed tokens
     env.ts                   # URL, SMTP, bootstrap, and Wallet env resolution
     keys.ts                  # public ID and API serialization helpers
     response.ts              # gif / empty / json / redirect / html trigger output
+    secret-box.ts            # AES-256-GCM envelope encryption of operator secrets
+    rate-limit.ts            # Postgres-backed + in-memory fixed-window limiters
+    hits.ts                  # shared hit-recording / dedupe-window decision
+    ssrf.ts                  # private/metadata-IP + DNS-rebinding webhook guard
     docs/                    # generated bait artifacts: Office, PDF, Wallet, NFC, etc.
     installers/              # host, web, IoT, NFC, and Wallet installer generation
     notify/                  # destinations, activation pings, queue, sender worker
     monitor.ts               # latch/window status logic
+    request-info.ts          # trusted client IP extraction + safe header snapshots
+    safe-body.ts             # bounded request body readers for JSON/text routes
     public-only-hosts.ts     # split public/dashboard host routing
     retention.ts             # optional row-level cleanup
   proxy.ts                   # Host/path guard for public-only deployments
+  middleware.ts              # wires proxy.ts host-split gate into the request path
   instrumentation.ts         # boot hook: migrations, bootstrap key, notify worker
 
 cli/                         # @mantis/cli terminal client

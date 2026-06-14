@@ -122,6 +122,31 @@ snippet reports to. The snippet stores a literal URL, so changing the CLI's
 current profile later does not affect already-installed Home Assistant or
 Scrypted automations.
 
+### Drive an action when a hit fires
+
+The snippets above let Home Assistant *trigger* a mantis. The reverse also
+works: a `home_assistant` notification destination lets a hit *drive* HA — flip a
+switch, cut a VLAN, fire a scene, or push a phone notification. Point it at an HA
+webhook automation:
+
+```bash
+mantis dest add <key-id> home_assistant https://<your-ha>/api/webhook/<id>
+```
+
+Every hit then POSTs a `mantis.hit` JSON payload (memo, IP, user-agent, and the
+full `host_context`) to that webhook. The target URL must end in
+`/api/webhook/<id>`. To scaffold the HA side, generate a ready-to-paste
+automation skeleton — it listens on the webhook, drops the activation ping, and
+shows example actions (switch toggle, mobile push, logbook entry):
+
+```bash
+mantis install <key-id> --type homeassistant-receiver --out mantis-ha-receiver.yaml
+```
+
+If Mantis reaches HA over a private/Tailscale address, the SSRF guard blocks it
+unless you set `ALLOW_PRIVATE_WEBHOOKS=1` (an instance-wide switch — prefer
+restricting egress at the network layer).
+
 For devices that do not expose useful webhooks, [`iot-helper/`](https://github.com/privacykey/mantis/tree/main/iot-helper) can watch LAN neighbor tables and log files, then fire the same Mantis URL for unexpected online/login events.
 
 ## What information each installer captures

@@ -15,6 +15,7 @@ Railway runs the mantis as a long-running container with their Postgres add-on. 
 5. On the mantis service, **Variables** → add:
    - `DATABASE_URL` → use the **Reference** syntax to link to the Postgres service: `${{ Postgres.DATABASE_URL }}`
    - `PUBLIC_BASE_URL` → leave blank for now; you'll fill it in after step 7
+   - `MANTIS_API_KEY_PEPPER` → generate with `openssl rand -base64 32`. Required. **Do not rotate after the first key is minted** — it invalidates every existing API key.
    - `AUTO_MIGRATE` → `1`
    - `BOOTSTRAP_API_KEY` → generate one with `node -e "console.log('mantis_live_' + require('crypto').randomBytes(24).toString('base64url'))"` and save it locally — you'll need it to log into the dashboard
    - (Optional) `SMTP_URL`, `SMTP_FROM` for email notifications

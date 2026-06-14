@@ -11,6 +11,10 @@ Run the stack against your laptop with Docker:
 
 ```bash
 git clone <this repo> mantis && cd mantis
+cp .env.example .env
+pepper="$(openssl rand -base64 32)"
+sed -i.bak "s|^MANTIS_API_KEY_PEPPER=.*|MANTIS_API_KEY_PEPPER=$pepper|" .env
+rm .env.bak
 docker compose up -d
 docker compose logs mantis | grep "bootstrap API key" -A1
 ```
@@ -39,7 +43,10 @@ The source workspace uses `pnpm@11.1.1` and requires Node `>=25.8.0`.
 corepack enable
 pnpm install
 cp .env.example .env
-# edit .env: at minimum set DATABASE_URL
+pepper="$(openssl rand -base64 32)"
+sed -i.bak "s|^MANTIS_API_KEY_PEPPER=.*|MANTIS_API_KEY_PEPPER=$pepper|" .env
+rm .env.bak
+# edit .env: at minimum set DATABASE_URL and keep MANTIS_API_KEY_PEPPER set
 
 # Start postgres separately (docker run -p 5432:5432 ... or use Neon/Supabase)
 pnpm run db:migrate

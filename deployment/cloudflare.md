@@ -52,6 +52,7 @@ cp .env.example .env
 # Edit .env:
 #   CLOUDFLARE_TUNNEL_TOKEN=eyJh...
 #   PUBLIC_BASE_URL=https://mantis.<your-domain>
+#   MANTIS_API_KEY_PEPPER=<base64-output-from-openssl-rand-base64-32>
 
 docker compose --profile cloudflared up -d
 ```

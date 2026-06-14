@@ -116,6 +116,14 @@ Expected:
 - The webhook receives a `mantis.hit` payload.
 - Cloudflare Worker logs stay quiet on success.
 
+Runtime behavior mirrors the stateful server where it matters for safety:
+redirect and HTML responses include `cache-control: no-store`, HTML responses
+also include a restrictive CSP sandbox, and forwarded webhook payloads include
+only an allowlisted/capped header snapshot. Credential-shaped request headers
+such as cookies, `authorization`, Cloudflare Access JWTs, session tokens, CSRF
+tokens, and API-key-looking names are dropped before forwarding; `x-mantis-*`
+installer headers are preserved.
+
 For failure debugging:
 
 ```bash

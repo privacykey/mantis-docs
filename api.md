@@ -55,17 +55,22 @@ are called out explicitly below.
 | `GET` `HEAD` | `/status/:public_id` | **Public.** Uptime-monitor status endpoint. 200 = ok, 503 = tripped, 404 = not monitored / disabled / expired / unknown. Does not record a hit. |
 | `GET` `HEAD` `POST` | `/c/:public_id` | **Public.** Records a hit, returns the configured response. |
 | `ANY` | `/inbox/<slug>` | **Dev only.** Captures webhook-style requests when `ENABLE_DEV_INBOX=1`. |
-| `GET` `DELETE` | `/api/inbox` | **Dev only.** Read or clear the in-memory dev inbox when `ENABLE_DEV_INBOX=1`. |
+| `GET` `DELETE` | `/api/inbox` | **Dev only.** Read or clear the in-memory dev inbox when `ENABLE_DEV_INBOX=1`. Bearer or session auth. |
 | `POST` | `/api/wallet/v1/log` | **Public Apple Wallet web service.** Accepts Wallet diagnostics. |
 | `GET` | `/api/wallet/v1/passes/:passTypeId/:serial` | **Public Apple Wallet web service.** Authenticates `Authorization: ApplePass <token>`, records `wallet-fetched`, returns the latest `.pkpass`. |
 | `GET` | `/api/wallet/v1/devices/:deviceId/registrations/:passTypeId` | **Public Apple Wallet web service.** Wallet update poll; returns 204 and does not record a hit. |
 | `POST` `DELETE` | `/api/wallet/v1/devices/:deviceId/registrations/:passTypeId/:serial` | **Public Apple Wallet web service.** Records `wallet-installed` on registration and `wallet-uninstalled` on removal. |
 
+Parsed request bodies are bounded. `POST /api/keys` and
+`POST /api/api-keys` reject JSON bodies over 64 KiB with
+`413 payload_too_large`. Apple Wallet log bodies are capped at 32 KiB, and the
+dev inbox capture path is capped at 1 MiB.
+
 Supported installer `type` values are `shell`, `shell-sudo`,
 `macos-login`, `macos-boot`, `macos-wake`, `macos-network`,
 `linux-boot`, `linux-wake`, `linux-network`, `windows-logon`,
 `windows-wake`, `windows-network`, `css-background`, `js-clone-detector`,
-`nfc-ndef`, `homeassistant`, and `scrypted`.
+`nfc-ndef`, `homeassistant`, `homeassistant-receiver`, and `scrypted`.
 
 Webhook destinations get an HMAC secret. Outbound raw-webhook deliveries include
 `X-Mantis-Timestamp` and `X-Mantis-Signature: sha256=<hex>` over
@@ -79,8 +84,8 @@ explicit reveal, or rotate responses; normal listing returns a fingerprint.
 | `gif` (default) | — | `200` + 1×1 transparent GIF |
 | `empty` | — | `204 No Content` |
 | `json` | any | `200` + JSON body |
-| `redirect` | `{"url":"..."}` | `302` to that URL |
-| `html` | `{"html":"..."}` | `200 text/html` |
+| `redirect` | `{"url":"..."}` | `302` to that HTTP(S) URL with no-store cache headers |
+| `html` | `{"html":"..."}` | `200 text/html` with no-store cache headers and a restrictive CSP sandbox |
 
 ## Webhook payload
 
